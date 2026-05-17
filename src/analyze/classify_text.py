@@ -26,27 +26,23 @@ def classify_text(text: str):
     target_model = next((m for m in available_models if "llama" in m.lower()), available_models[0])
 
     prompt = f"""
-あなたは「闇バイト募集文の危険度を判定するAI」です。
-以下の文章を読み、JSON形式で返してください。
+以下の文章を闇バイト危険度として判定し、必ず JSON のみを返してください。
+説明文・前置き・補足は禁止。コードブロックも禁止。
 
 文章:
 {text}
 
-出力フォーマット（必ずこの形式で返す）:
+出力形式:
 {{
-  "total_score": 数値（0〜100）,
-  "reasons": [
-      "理由1",
-      "理由2",
-      "理由3"
-  ]
+  "total_score": 数値,
+  "reasons": ["理由1", "理由2"]
 }}
 """
 
     response = client.chat.completions.create(
         model=target_model,
         messages=[
-            {"role": "system", "content": "あなたは危険度を判定するAIです。"},
+            {"role": "system", "content": "あなたは JSON 生成専用AIです。出力は JSON のみ。説明文禁止。"},
             {"role": "user", "content": prompt}
         ],
         temperature=0.2,
