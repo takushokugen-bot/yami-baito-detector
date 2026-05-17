@@ -2,7 +2,7 @@ import os
 import json
 from groq import Groq
 
-client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+client = Groq(api_key=os.environ["GROQ_API_KEY"])
 
 def classify_text(text: str):
     prompt = f"""
@@ -24,8 +24,11 @@ def classify_text(text: str):
 """
 
     response = client.chat.completions.create(
-        model="mixtral-8x7b-32768",  # ← Groq で実際に存在するモデル
-        messages=[{"role": "user", "content": prompt}],
+        model="mixtral-8x7b-32768",
+        messages=[
+            {"role": "system", "content": "あなたは危険度を判定するAIです。"},
+            {"role": "user", "content": prompt}
+        ],
         temperature=0.2,
     )
 
