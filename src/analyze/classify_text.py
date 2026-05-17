@@ -7,7 +7,9 @@ def classify_text(text: str):
     if not api_key:
         return {
             "total_score": 0,
-            "reasons": ["GROQ_API_KEY is missing"]
+            "reasons": ["GROQ_API_KEY is missing"],
+            "score_description": "APIキーが設定されていません。",
+            "error_message": "GROQ_API_KEY が見つかりません。環境変数を確認してください。"
         }
 
     client = Groq(api_key=api_key)
@@ -19,7 +21,9 @@ def classify_text(text: str):
     if not available_models:
         return {
             "total_score": 0,
-            "reasons": ["No available models in your Groq account"]
+            "reasons": ["No available models"],
+            "score_description": "モデルが利用できないため判定できません。",
+            "error_message": "Groq アカウントに利用可能なモデルがありません。"
         }
 
     # ★ llama 系を優先、なければ最初のモデル
@@ -59,9 +63,31 @@ def classify_text(text: str):
 
     # ★ JSON のみ返ってくる前提で parse
     try:
-        return json.loads(content)
+        result = json.loads(content)
     except Exception:
         return {
             "total_score": 0,
-            "reasons": ["JSON parse error", content[:200]]
+            "reasons": ["JSON parse error", content[:200]],
+            "score_description": "AI の出力が正しい形式ではありませんでした。",
+            "error_message": "⚠️ JSON の解析に失敗しました。通信状況などでまれに発生します。もう一度ボタンを押して再実行してください。"
         }
+
+    # ★ スコア説明を追加
+    score_description = {
+        0: "安全性が高い投稿です。",
+        1: "ほぼ安全ですが、念のため注意してください。",
+        2: "やや注意が必要です。",
+        3: "少し怪しい要素があります。",
+        4: "注意すべきポイントがあります。",
+        5: "怪しい要素が複数あります。慎重に判断してください。",
+        6: "危険度が高めです。応募は避けた方が良いです。",
+        7: "かなり危険です。闇バイトの可能性があります。",
+        8: "非常に危険です。絶対に応募しないでください。",
+        9: "闇バイトの可能性が極めて高いです。",
+        10: "ほぼ確実に闇バイトです。絶対に関わらないでください。"
+    }
+
+    result["score_description"] = score_description.get(result["total_score"], "不明")
+    result["error_message"] = ""
+
+    return result
