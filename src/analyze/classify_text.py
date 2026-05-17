@@ -3,7 +3,14 @@ import json
 from groq import Groq
 
 def classify_text(text: str):
-    client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+    api_key = os.environ.get("GROQ_API_KEY")
+    if not api_key:
+        return {
+            "total_score": 0,
+            "reasons": ["GROQ_API_KEY is missing"]
+        }
+
+    client = Groq(api_key=api_key)
 
     prompt = f"""
 あなたは「闇バイト募集文の危険度を判定するAI」です。
