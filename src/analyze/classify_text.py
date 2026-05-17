@@ -25,12 +25,17 @@ def classify_text(text: str):
     # ★ llama 系を優先、なければ最初のモデル
     target_model = next((m for m in available_models if "llama" in m.lower()), available_models[0])
 
-    # ★ Groq の分類モデル仕様：user メッセージ 1 個だけ
+    # ★ 安定版プロンプト（JSON固定・理由3つ・キー順固定）
     prompt = f"""
 以下の文章を闇バイト危険度として判定し、必ず JSON のみを返してください。
-説明文・前置き・補足・前後の文章は禁止。
-コードブロックも禁止。
-JSON の外に一文字でも出したら失敗です。
+
+【絶対ルール】
+- JSON の外に一文字でも出さない
+- 説明文・前置き・補足は禁止
+- コードブロック禁止
+- キーの順序は "total_score" → "reasons"
+- 理由は必ず3つ返す
+- 出力は JSON のみ
 
 文章:
 {text}
@@ -38,7 +43,7 @@ JSON の外に一文字でも出したら失敗です。
 出力形式:
 {{
   "total_score": 数値,
-  "reasons": ["理由1", "理由2"]
+  "reasons": ["理由1", "理由2", "理由3"]
 }}
 """
 
@@ -47,7 +52,7 @@ JSON の外に一文字でも出したら失敗です。
         messages=[
             {"role": "user", "content": prompt}
         ],
-        temperature=0.2,
+        temperature=0,  # ★ 揺れを完全に抑える
     )
 
     content = response.choices[0].message.content
