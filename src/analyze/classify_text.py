@@ -2,9 +2,9 @@ import os
 import json
 from groq import Groq
 
-client = Groq(api_key=os.environ["GROQ_API_KEY"])
-
 def classify_text(text: str):
+    client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+
     prompt = f"""
 あなたは「闇バイト募集文の危険度を判定するAI」です。
 以下の文章を読み、JSON形式で返してください。
@@ -24,7 +24,7 @@ def classify_text(text: str):
 """
 
     response = client.chat.completions.create(
-        model="llama3-8b-8192",   # ← Groq で実在するモデル
+        model="llama3-8b-8192",
         messages=[
             {"role": "system", "content": "あなたは危険度を判定するAIです。"},
             {"role": "user", "content": prompt}
