@@ -12,6 +12,19 @@ def classify_text(text: str):
 
     client = Groq(api_key=api_key)
 
+    # ★ Groq に「使えるモデル一覧」を問い合わせる
+    models = client.models.list()
+    available_models = [m.id for m in models.data]
+
+    if not available_models:
+        return {
+            "total_score": 0,
+            "reasons": ["No available models in your Groq account"]
+        }
+
+    # ★ llama 系を優先、なければ最初のモデル
+    target_model = next((m for m in available_models if "llama" in m.lower()), available_models[0])
+
     prompt = f"""
 あなたは「闇バイト募集文の危険度を判定するAI」です。
 以下の文章を読み、JSON形式で返してください。
@@ -31,7 +44,7 @@ def classify_text(text: str):
 """
 
     response = client.chat.completions.create(
-        model="llama3-8b-tool",
+        model=target_model,
         messages=[
             {"role": "system", "content": "あなたは危険度を判定するAIです。"},
             {"role": "user", "content": prompt}
