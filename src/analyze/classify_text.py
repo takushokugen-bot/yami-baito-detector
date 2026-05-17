@@ -31,7 +31,7 @@ def classify_text(text: str):
 """
 
     response = client.chat.completions.create(
-        model="llama3-8b",
+        model="llama3-8b-preview",
         messages=[
             {"role": "system", "content": "あなたは危険度を判定するAIです。"},
             {"role": "user", "content": prompt}
