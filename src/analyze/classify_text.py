@@ -25,7 +25,7 @@ def classify_text(text: str):
 """
 
     response = client.chat.completions.create(
-        model="mixtral-8x7b-32768",
+        model="mixtral-8x7b",   # ← Groq で使える正しいモデル名
         messages=[{"role": "user", "content": prompt}],
         temperature=0.2,
     )
