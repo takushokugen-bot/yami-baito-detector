@@ -2,7 +2,6 @@ import os
 import json
 from groq import Groq
 
-# Streamlit Cloud → Secrets に GROQ_API_KEY を設定しておく
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
 def classify_text(text: str):
@@ -25,7 +24,7 @@ def classify_text(text: str):
 """
 
     response = client.chat.completions.create(
-        model="mixtral-8x7b",   # ← Groq で使える正しいモデル名
+        model="mixtral-8x7b-32768",  # ← Groq で実際に存在するモデル
         messages=[{"role": "user", "content": prompt}],
         temperature=0.2,
     )
