@@ -24,7 +24,7 @@ def classify_text(text: str):
 """
 
     response = client.chat.completions.create(
-        model="mixtral-8x7b-32768",
+        model="llama3-8b-8192",   # ← Groq で実在するモデル
         messages=[
             {"role": "system", "content": "あなたは危険度を判定するAIです。"},
             {"role": "user", "content": prompt}
