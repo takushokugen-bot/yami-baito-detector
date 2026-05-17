@@ -1,38 +1,43 @@
-import subprocess
 import json
-import sys
-import io
+from groq import Groq
 
-# Windows の標準出力を UTF-8 に強制
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+# Groq APIキーを環境変数に入れておく
+# Streamlit Cloud → Secrets に GORQ_API_KEY を設定
+client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
 def classify_text(text: str):
-    # プロンプト読み込み
-    with open("models/prompt_classifier.txt", "r", encoding="utf-8") as f:
-        prompt = f.read().replace("{{POST_TEXT}}", text)
+    prompt = f"""
+あなたは「闇バイト募集文の危険度を判定するAI」です。
+以下の文章を読み、JSON形式で返してください。
 
-    # Ollama 実行（ストリームではなく一括で受け取る）
-    result = subprocess.run(
-        ["ollama", "run", "qwen2.5:7b-instruct"],
-        input=prompt,
-        text=True,
-        capture_output=True,
-        encoding="utf-8"
+文章:
+{text}
+
+出力フォーマット（必ずこの形式で返す）:
+{{
+  "total_score": 数値（0〜100）,
+  "reasons": [
+      "理由1",
+      "理由2",
+      "理由3"
+  ]
+}}
+"""
+
+    response = client.chat.completions.create(
+        model="mixtral-8x7b-32768",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.2,
     )
 
-    output = result.stdout.strip()
+    content = response.choices[0].message.content
 
-    if not output:
-        return {
-            "total_score": 0,
-            "reasons": ["empty output", "no response from model"]
-        }
-
-    # JSON としてパース
+    # JSONとしてパース
     try:
-        return json.loads(output)
-    except Exception as e:
+        return json.loads(content)
+    except Exception:
+        # JSONが壊れていた場合の保険
         return {
             "total_score": 0,
-            "reasons": ["JSON parse error", str(e), output[:200]]
+            "reasons": ["JSON parse error", content[:200]]
         }
