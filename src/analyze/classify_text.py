@@ -12,7 +12,7 @@ def classify_text(text: str):
 
     client = Groq(api_key=api_key)
 
-    # 利用可能モデル一覧を取得
+    # ★ Groq に「使えるモデル一覧」を問い合わせる
     models = client.models.list()
     available_models = [m.id for m in models.data]
 
@@ -22,13 +22,15 @@ def classify_text(text: str):
             "reasons": ["No available models in your Groq account"]
         }
 
-    # llama を優先
+    # ★ llama 系を優先、なければ最初のモデル
     target_model = next((m for m in available_models if "llama" in m.lower()), available_models[0])
 
-    # ★ user メッセージ 1 個だけにする（Groq の分類モデル仕様）
+    # ★ Groq の分類モデル仕様：user メッセージ 1 個だけ
     prompt = f"""
 以下の文章を闇バイト危険度として判定し、必ず JSON のみを返してください。
-説明文・前置き・補足は禁止。コードブロックも禁止。
+説明文・前置き・補足・前後の文章は禁止。
+コードブロックも禁止。
+JSON の外に一文字でも出したら失敗です。
 
 文章:
 {text}
@@ -50,6 +52,7 @@ def classify_text(text: str):
 
     content = response.choices[0].message.content
 
+    # ★ JSON のみ返ってくる前提で parse
     try:
         return json.loads(content)
     except Exception:
