@@ -1,8 +1,8 @@
+import os
 import json
 from groq import Groq
 
-# Groq APIキーを環境変数に入れておく
-# Streamlit Cloud → Secrets に GORQ_API_KEY を設定
+# Streamlit Cloud → Secrets に GROQ_API_KEY を設定しておく
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
 def classify_text(text: str):
@@ -32,11 +32,9 @@ def classify_text(text: str):
 
     content = response.choices[0].message.content
 
-    # JSONとしてパース
     try:
         return json.loads(content)
     except Exception:
-        # JSONが壊れていた場合の保険
         return {
             "total_score": 0,
             "reasons": ["JSON parse error", content[:200]]
